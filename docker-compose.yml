@@ -6,6 +6,7 @@ x-app: &app
     REDIS_URL: redis://redis:6379/0
     JWT_SECRET: ${JWT_SECRET:-tutor-local-development-change-before-sharing-2026}
     SEED_DEMO: ${SEED_DEMO:-true}
+    DP_BUDGET_CAP: ${DP_BUDGET_CAP:-3.0}
   volumes:
     - reports:/app/artifacts
   depends_on:

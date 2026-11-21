@@ -31,3 +31,10 @@ target/
 *.o
 *.obj
 .DS_Store
+
+# 本地 SQLite 降级与测试产物（生产使用 PostgreSQL）
+*.db
+*.db-wal
+*.db-shm
+test-artifacts/
+.pytest_cache/

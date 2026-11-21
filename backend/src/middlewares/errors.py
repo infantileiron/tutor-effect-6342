@@ -1,10 +1,14 @@
 import logging
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 class ErrorMiddleware(BaseHTTPMiddleware):
     async def dispatch(self,request,call_next):
         try: return await call_next(request)
+        except HTTPException:
+            # 业务层已给出明确语义（402/409/422 等），原样透传
+            raise
         except IntegrityError: return JSONResponse({'detail':'编号或方案标题重复，请修改后重试'},status_code=409)
         except Exception:
             logging.exception('request failed')

@@ -2,7 +2,8 @@ import random,json
 from datetime import datetime,timezone
 from sqlalchemy import select,func
 from src.config.database import Base,engine,SessionLocal
-from src.models.entities import User,Student,Plan,Report
+from src.models.entities import User,Student,Plan,Report,PrivacyBudget
+from src.constants.enums import DEFAULT_BUDGET_CAP
 from src.utils.security import hash_password
 from src.services.statistics import welch
 
@@ -28,5 +29,10 @@ def seed():
         if not db.scalar(select(Report).where(Report.plan_id==plan.id)):
             result=welch(db.scalars(select(Student).order_by(Student.code)).all(),plan)
             db.add(Report(plan_id=plan.id,status='completed',result=result,created_at=datetime.now(timezone.utc).isoformat(),conclusion='干预组均分较高。建议保留教学点分层观察，并在下一轮随机分组验证。',published=True));db.commit()
+        # 每个方案一份累计隐私预算：跨报告共用，seed 重跑不重置已花费额度
+        for p in db.scalars(select(Plan)).all():
+            if not db.scalar(select(PrivacyBudget).where(PrivacyBudget.plan_id==p.id)):
+                db.add(PrivacyBudget(plan_id=p.id,cap_epsilon=DEFAULT_BUDGET_CAP,spent_epsilon=0.0,updated_at=datetime.now(timezone.utc).isoformat()))
+        db.commit()
         print(json.dumps({table:db.scalar(select(func.count()).select_from(model)) for table,model in [('users',User),('students',Student),('plans',Plan),('reports',Report)]}))
 if __name__=='__main__': seed()

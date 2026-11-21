@@ -24,3 +24,10 @@ class RunInput(BaseModel):
 class ConclusionInput(BaseModel):
     conclusion:str=Field(min_length=4,max_length=3000)
     published:bool=False
+class ShareCreateInput(BaseModel):
+    report_id:int=Field(gt=0)
+    # 每次申请可选隐私预算；纯 DP 要求 epsilon>0，上限防止误填
+    epsilon:float=Field(ge=0.05,le=10.0,allow_inf_nan=False)
+    idempotency_key:str=Field(min_length=8,max_length=80)
+    # 仅演示验证用：注入一次生成中断（editor 角色）
+    fail_injected:bool=False
